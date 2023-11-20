@@ -21,23 +21,38 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  List<Contact> contacts = [];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Lista de Contatos'),
+        title: Text('Agenda de contatos'),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => AddContactScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => AddContactScreen(),
+                  ),
                 );
+
+                if (result != null && result is Contact) {
+                  setState(() {
+                    contacts.add(result);
+                  });
+                }
               },
               child: Text('Novo Contato'),
             ),
@@ -46,7 +61,9 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ContactsScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => ContactsScreen(contacts: contacts),
+                  ),
                 );
               },
               child: Text('Contatos'),
@@ -58,13 +75,10 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class ContactsScreen extends StatefulWidget {
-  @override
-  _ContactsScreenState createState() => _ContactsScreenState();
-}
+class ContactsScreen extends StatelessWidget {
+  final List<Contact> contacts;
 
-class _ContactsScreenState extends State<ContactsScreen> {
-  List<Contact> contacts = [];
+  ContactsScreen({required this.contacts});
 
   @override
   Widget build(BuildContext context) {
@@ -82,28 +96,20 @@ class _ContactsScreenState extends State<ContactsScreen> {
             trailing: IconButton(
               icon: Icon(Icons.delete),
               onPressed: () {
-                setState(() {
-                  contacts.removeAt(index);
-                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Contato removido: ${contacts[index].name}'),
+                  ),
+                );
+
+                contacts.removeAt(index);
+
+                // Atualizar a tela para refletir a remoção
+                Navigator.popAndPushNamed(context, '/contacts');
               },
             ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddContactScreen()),
-          );
-
-          if (result != null && result is Contact) {
-            setState(() {
-              contacts.add(result);
-            });
-          }
-        },
-        child: Icon(Icons.add),
       ),
     );
   }
