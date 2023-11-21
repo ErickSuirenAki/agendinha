@@ -104,7 +104,6 @@ class ContactsScreen extends StatelessWidget {
 
                 contacts.removeAt(index);
 
-                // Atualizar a tela para refletir a remoção
                 Navigator.popAndPushNamed(context, '/contacts');
               },
             ),
